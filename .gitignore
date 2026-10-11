@@ -1,0 +1,11 @@
+# dependencies (builds use a node_modules outside the repo)
+node_modules/
+
+# temporary test pages
+_probe.html
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/

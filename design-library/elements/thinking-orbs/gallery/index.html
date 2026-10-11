@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thinking Orbs galleri</title>
+<style>
+  :root {
+    --background: #ffffff;
+    --foreground: #0a0a0a;
+    --card: #ffffff;
+    --muted: #f5f5f5;
+    --muted-foreground: #737373;
+    --border: #e5e5e5;
+    --ring: #a3a3a3;
+    --primary: #171717;
+    --primary-foreground: #fafafa;
+    --accent: #eab308;
+    --radius: 12px;
+  }
+  :root[data-theme="dark"] {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+    --card: #141414;
+    --muted: #1f1f1f;
+    --muted-foreground: #a3a3a3;
+    --border: #262626;
+    --ring: #525252;
+    --primary: #fafafa;
+    --primary-foreground: #171717;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    transition: background-color .2s, color .2s;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 32px 16px 64px; }
+  header h1 { font-size: 24px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted-foreground); }
+  a { color: inherit; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
+    margin: 24px 0; padding: 12px 14px;
+    background: color-mix(in srgb, var(--background) 85%, transparent);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border); border-radius: var(--radius);
+  }
+  .ctl { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); font-size: 13px; }
+  .ctl output { color: var(--foreground); min-width: 2.5em; font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 96px; accent-color: var(--primary); }
+  input[type=color] { width: 28px; height: 28px; padding: 0; border: 1px solid var(--border); border-radius: 6px; background: none; cursor: pointer; }
+  .btn {
+    height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); color: var(--foreground); font: inherit; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { background: var(--muted); }
+  .btn:focus-visible, .card:focus-visible, .star:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .btn[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg .btn { border: 0; border-radius: 0; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    position: relative; text-align: left; cursor: pointer;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--card);
+    padding: 20px 16px 16px; color: inherit; font: inherit;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover { border-color: var(--ring); }
+  .card[aria-selected="true"] { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+  .stage { display: flex; align-items: center; justify-content: center; gap: 20px; height: 96px; }
+  .stage canvas { display: block; }
+  .name { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .name code { font-weight: 400; font-size: 12px; color: var(--muted-foreground); }
+  .desc { color: var(--muted-foreground); font-size: 13px; margin: 0; }
+  .star {
+    position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 8px;
+    border: 0; background: none; cursor: pointer; color: var(--muted-foreground); font-size: 18px; line-height: 1;
+  }
+  .star:hover { background: var(--muted); }
+  .star[aria-pressed="true"] { color: var(--accent); }
+
+  .detail {
+    margin-top: 24px; border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--card); padding: 20px; display: grid; gap: 16px;
+    grid-template-columns: 200px 1fr;
+  }
+  .detail .big { display: flex; align-items: center; justify-content: center; background: var(--muted); border-radius: 10px; min-height: 180px; }
+  .detail h2 { margin: 0 0 4px; font-size: 18px; }
+  .detail .inline-demo { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); margin: 8px 0 12px; }
+  pre {
+    margin: 0; padding: 14px; border-radius: 10px; background: var(--muted); overflow-x: auto;
+    font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .code-head { display: flex; justify-content: space-between; align-items: center; margin: 12px 0 6px; color: var(--muted-foreground); font-size: 12px; }
+  .favs { margin-top: 12px; color: var(--muted-foreground); font-size: 13px; }
+  footer { margin-top: 40px; color: var(--muted-foreground); font-size: 12px; }
+  @media (max-width: 640px) {
+    .detail { grid-template-columns: 1fr; }
+    input[type=range] { width: 72px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Thinking Orbs</h1>
+    <p>Alla 9 tillstånd i storlek 64, 32 och 20. Klicka på ett kort för att se koden, och stjärnmärk dina favoriter.</p>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="Inställningar">
+    <div class="seg" role="group" aria-label="Tema">
+      <button class="btn" data-theme-btn="light" aria-pressed="true">Ljust</button>
+      <button class="btn" data-theme-btn="dark" aria-pressed="false">Mörkt</button>
+    </div>
+    <label class="ctl">Hastighet <input type="range" id="speed" min="0.25" max="3" step="0.05" value="1"><output id="speedOut">1×</output></label>
+    <label class="ctl">Täthet <input type="range" id="dots" min="0.3" max="2.5" step="0.05" value="1"><output id="dotsOut">1×</output></label>
+    <label class="ctl">Prickstorlek <input type="range" id="dotSize" min="0.5" max="2" step="0.05" value="1"><output id="dotSizeOut">1×</output></label>
+    <label class="ctl">Färg <input type="color" id="color" value="#6366f1"></label>
+    <button class="btn" id="colorToggle" aria-pressed="false">Använd färg</button>
+    <button class="btn" id="pause" aria-pressed="false">Pausa</button>
+    <button class="btn" id="reset">Återställ</button>
+  </div>
+
+  <div class="grid" id="grid" role="listbox" aria-label="Orb-tillstånd"></div>
+  <p class="favs" id="favs"></p>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <footer>
+    Thinking Orbs © Jakub Antalik, MIT-licens. <a href="https://libraries.dev/orbs">libraries.dev/orbs</a> ·
+    <a href="https://github.com/Jakubantalik/Libraries.dev">GitHub</a>. Motorn är byggd lokalt från <code>../source</code>.
+  </footer>
+</main>
+
+<script src="orbs-engine.js"></script>
+<script>
+(() => {
+  const E = window.ThinkingOrbsEngine;
+  const STATES = [
+    ["working",    "Arbetar",     "Partiklar i lutande banor"],
+    ["searching",  "Söker",       "En meridian sveper över en prickig glob"],
+    ["solving",    "Löser",       "Banden kaosar runt och klickar sedan på plats"],
+    ["listening",  "Lyssnar",     "En vågform rullar genom ringarna"],
+    ["connecting", "Kopplar",     "En stjärnbild som kopplar ihop sig själv"],
+    ["weaving",    "Väver",       "Tre trådar flätas runt klotet"],
+    ["composing",  "Skriver",     "Ett böljande band med flera trådar"],
+    ["breathing",  "Andas/tänker","En ring som långsamt formas om"],
+    ["shaping",    "Formar",      "Cirkel → triangel → kvadrat"],
+  ];
+  const SIZES = [64, 32, 20];
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("orbs:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("orbs:" + k, JSON.stringify(v)); } catch {} },
+  };
+
+  const DEFAULTS = { theme: "light", speed: 1, dots: 1, dotSize: 1, color: "#6366f1", useColor: false, paused: false };
+  const s = Object.assign({}, DEFAULTS, store.get("settings", {}));
+  let favs = new Set(store.get("favs", []));
+  let selected = store.get("selected", "searching");
+
+  const $ = (id) => document.getElementById(id);
+  const grid = $("grid");
+  const orbs = []; // { canvas, ctx, state, size }
+
+  function makeCanvas(state, size) {
+    const c = document.createElement("canvas");
+    c.width = c.height = Math.round(size * DPR);
+    c.style.width = c.style.height = size + "px";
+    c.setAttribute("aria-hidden", "true");
+    const o = { canvas: c, ctx: c.getContext("2d"), state, size };
+    orbs.push(o);
+    return c;
+  }
+
+  for (const [key, label, desc] of STATES) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.tabIndex = 0;
+    card.setAttribute("role", "option");
+    card.dataset.state = key;
+    const stage = document.createElement("div");
+    stage.className = "stage";
+    for (const sz of SIZES) stage.appendChild(makeCanvas(key, sz));
+    card.innerHTML = "";
+    card.appendChild(stage);
+    card.insertAdjacentHTML("beforeend",
+      `<div class="name">${label} <code>${key}</code></div><p class="desc">${desc}</p>
+       <button class="star" aria-label="Favorit: ${label}" aria-pressed="false">★</button>`);
+    card.addEventListener("click", (e) => { if (!e.target.closest(".star")) select(key); });
+    card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(key); } });
+    card.querySelector(".star").addEventListener("click", () => toggleFav(key));
+    grid.appendChild(card);
+  }
+
+  // detail panel
+  const detail = $("detail");
+  detail.innerHTML = `
+    <div class="big" id="bigStage"></div>
+    <div>
+      <h2 id="dTitle"></h2>
+      <div class="inline-demo" id="inlineDemo"></div>
+      <div class="code-head"><span>React (npm install thinking-orbs)</span><button class="btn" id="copy1">Kopiera</button></div>
+      <pre><code id="code1"></code></pre>
+      <div class="code-head"><span>shadcn-wrapper (components/ui/thinking-orb.tsx)</span><button class="btn" id="copy2">Kopiera</button></div>
+      <pre><code id="code2"></code></pre>
+    </div>`;
+  const bigOrb = { canvas: null, ctx: null, state: selected, size: 64, scale: 2.5 };
+  const inlineOrb = { canvas: null, ctx: null, state: selected, size: 20 };
+  {
+    const c = makeCanvas(selected, 64); orbs.pop();
+    c.style.width = c.style.height = 64 * bigOrb.scale + "px";
+    c.width = c.height = Math.round(64 * bigOrb.scale * DPR);
+    bigOrb.canvas = c; bigOrb.ctx = c.getContext("2d");
+    $("bigStage").appendChild(c); orbs.push(bigOrb);
+    const ic = makeCanvas(selected, 20); orbs.pop();
+    inlineOrb.canvas = ic; inlineOrb.ctx = ic.getContext("2d"); orbs.push(inlineOrb);
+    $("inlineDemo").appendChild(ic);
+    $("inlineDemo").insertAdjacentHTML("beforeend", `<span id="inlineText"></span>`);
+  }
+
+  function propsString(state, size) {
+    const p = [`state="${state}"`, `size={${size}}`];
+    if (s.speed !== 1) p.push(`speed={${s.speed}}`);
+    if (s.dots !== 1) p.push(`dots={${s.dots}}`);
+    if (s.dotSize !== 1) p.push(`dotSize={${s.dotSize}}`);
+    if (s.useColor) p.push(`color="${s.color}"`);
+    return p.join(" ");
+  }
+  function renderDetail() {
+    const [key, label] = STATES.find((x) => x[0] === selected);
+    bigOrb.state = inlineOrb.state = key;
+    $("dTitle").textContent = `${label} — ${key}`;
+    $("inlineText").textContent = label + "…";
+    $("code1").textContent =
+`import { ThinkingOrb } from "thinking-orbs"
+
+<ThinkingOrb ${propsString(key, 64)} />
+<ThinkingOrb ${propsString(key, 20)} />`;
+    $("code2").textContent =
+`import { ThinkingOrb } from "@/components/ui/thinking-orb"
+
+<ThinkingOrb ${propsString(key, 64)} />`;
+    for (const card of grid.children) card.setAttribute("aria-selected", String(card.dataset.state === key));
+  }
+  for (const [btn, code] of [["copy1", "code1"], ["copy2", "code2"]]) {
+    $(btn).addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText($(code).textContent); $(btn).textContent = "Kopierat!"; }
+      catch { $(btn).textContent = "Markera och kopiera"; }
+      setTimeout(() => ($(btn).textContent = "Kopiera"), 1500);
+    });
+  }
+  function select(key) { selected = key; store.set("selected", key); renderDetail(); }
+
+  function renderFavs() {
+    for (const card of grid.children) card.querySelector(".star").setAttribute("aria-pressed", String(favs.has(card.dataset.state)));
+    $("favs").textContent = favs.size ? "Favoriter: " + [...favs].join(", ") : "Inga favoriter än. Klicka på ★ på ett kort.";
+  }
+  function toggleFav(key) { favs.has(key) ? favs.delete(key) : favs.add(key); store.set("favs", [...favs]); renderFavs(); }
+
+  // controls
+  function applyTheme() {
+    document.documentElement.dataset.theme = s.theme;
+    document.querySelectorAll("[data-theme-btn]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.themeBtn === s.theme)));
+  }
+  document.querySelectorAll("[data-theme-btn]").forEach((b) => b.addEventListener("click", () => { s.theme = b.dataset.themeBtn; save(); applyTheme(); }));
+  for (const k of ["speed", "dots", "dotSize"]) {
+    const el = $(k);
+    el.value = s[k];
+    $(k + "Out").textContent = (+s[k]).toFixed(2).replace(/\.?0+$/, "") + "×";
+    el.addEventListener("input", () => { s[k] = +el.value; $(k + "Out").textContent = s[k].toFixed(2).replace(/\.?0+$/, "") + "×"; optsCache.clear(); save(); renderDetail(); });
+  }
+  $("color").value = s.color;
+  $("color").addEventListener("input", (e) => { s.color = e.target.value; s.useColor = true; save(); syncToggles(); renderDetail(); });
+  $("colorToggle").addEventListener("click", () => { s.useColor = !s.useColor; save(); syncToggles(); renderDetail(); });
+  $("pause").addEventListener("click", () => { s.paused = !s.paused; save(); syncToggles(); });
+  $("reset").addEventListener("click", () => {
+    Object.assign(s, DEFAULTS, { theme: s.theme }); optsCache.clear(); save();
+    for (const k of ["speed", "dots", "dotSize"]) { $(k).value = s[k]; $(k + "Out").textContent = "1×"; }
+    $("color").value = s.color; syncToggles(); renderDetail();
+  });
+  function syncToggles() {
+    $("colorToggle").setAttribute("aria-pressed", String(s.useColor));
+    $("pause").setAttribute("aria-pressed", String(s.paused));
+    $("pause").textContent = s.paused ? "Spela" : "Pausa";
+  }
+  function save() { store.set("settings", s); }
+
+  // rendering — one shared clock, like the React component
+  const optsCache = new Map();
+  function resolved(state, size) {
+    const k = state + size;
+    if (!optsCache.has(k)) {
+      const r = E.resolvePreset(state, size);
+      let opts = s.dots !== 1 ? E.scaleCounts(r.opts, Math.max(0.1, s.dots)) : r.opts;
+      if (s.dotSize !== 1) opts = E.scaleRadii(opts, Math.max(0.1, s.dotSize));
+      optsCache.set(k, { mode: r.mode, speed: r.speed, opts });
+    }
+    return optsCache.get(k);
+  }
+  function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; }
+
+  let clock = 0, last = performance.now();
+  function draw(now) {
+    // rAF timestamps can precede the performance.now() taken at setup, and a
+    // negative clock breaks modes that index shapes by time (shaping)
+    const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+    if (!s.paused && !reduced) clock += dt;
+    const t = reduced ? 0.6 : clock;
+    const dark = s.theme === "dark";
+    const tint = s.useColor ? hexToRgb(s.color) : undefined;
+    for (const o of orbs) {
+      const { mode, speed, opts } = resolved(o.state, o.size);
+      const scale = (o.scale || 1) * DPR;
+      o.ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      o.ctx.clearRect(0, 0, o.size, o.size);
+      try {
+        E.paintFrame(o.ctx, E.MODE_FRAMES[mode](o.size, t * speed * s.speed, opts), dark, tint);
+      } catch (err) {
+        console.error(o.state, o.size, err);
+      }
+    }
+    if (!document.hidden) requestAnimationFrame(draw);
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { last = performance.now(); requestAnimationFrame(draw); } });
+
+  applyTheme(); syncToggles(); renderFavs(); renderDetail();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

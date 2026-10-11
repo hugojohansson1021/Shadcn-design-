@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "thinking-orbs": ["../../design-library/elements/thinking-orbs/source/src/index.ts"],
+      "border-beam": ["../../design-library/elements/border-beam/source/src/index.ts"],
+      "bot-avatars": ["../../design-library/elements/bot-avatars/source/src/index.ts"]
+    }
+  },
+  "include": ["app", "components", "lib"]
+}
